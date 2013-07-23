@@ -5,10 +5,14 @@ These scripts are used to setup a Rackspace designate environment. The vagrant f
 
 To run the bootstrap.sh without chef:
 ``` bash
+apt-get update
+apt-get install python-pip python-virtualenv rabbitmq-server git
+apt-get build-dep python-lxml
+git clone https://github.com/stackforge/designate.git
 git clone https://github.com/joeracker/designate_dev.git
-vim bootstrap.sh # read it! there are reqs
-sudo chmod +x bootstrap.sh #Update permissions
-./bootstrap.sh #Execute the script
+cd designate
+sudo chmod +x ~/designate_dev/bootstrap.sh #Update permissions
+./~/designate_dev/bootstrap.sh #Execute the script
 ```
 
 TODO:
