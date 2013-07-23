@@ -6,3 +6,4 @@ git clone https://github.com/opscode-cookbooks/vim.git
 git clone https://github.com/opscode-cookbooks/python.git
 git clone https://github.com/opscode-cookbooks/rabbitmq.git
 git clone https://github.com/opscode-cookbooks/erlang.git
+git clone https://github.com/opscode-cookbooks/git.git
