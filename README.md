@@ -12,7 +12,7 @@ git clone https://github.com/stackforge/designate.git
 git clone https://github.com/joeracker/designate_dev.git
 cd designate
 sudo chmod +x ~/designate_dev/bootstrap.sh #Update permissions
-./~/designate_dev/bootstrap.sh #Execute the script
+~/designate_dev/bootstrap.sh #Execute the script
 ```
 
 TODO:
