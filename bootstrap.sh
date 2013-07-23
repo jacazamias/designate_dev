@@ -7,7 +7,7 @@
 #  git clone https://github.com/stackforge/designate.git
 #  set the $DESIGNATE_SRC variable below to match the root of the designate code repo
 
-export DESIGNATE_SRC="$HOME/designate"
+export DESIGNATE_SRC="$HOME/designate/designate_src"
 echo "export DESIGNATE_SRC=$DESIGNATE_SRC" >> $HOME/.bashrc
 
 # This file executes each time a new vagrant machine is setup. Used to setup app python dependencies
