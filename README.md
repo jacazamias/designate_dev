@@ -1,7 +1,7 @@
 designate_dev
 =============
 
-These scripts are used to setup a Rackspace designate environment. The vagrant file is still under development. The bootstrap.sh file can be used to install successfully.
+These scripts are used to setup a Rackspace designate environment. The vagrant file is still under development. The bootstrap.sh file can be used to install successfully. Install is based on Tim's [Dev environment walk through](http://designate.readthedocs.org/en/latest/gettingstarted.html#development-environment).
 
 To run the bootstrap.sh without chef:
 ``` bash
