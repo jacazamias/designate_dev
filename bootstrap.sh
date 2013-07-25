@@ -7,35 +7,34 @@
 #  git clone https://github.com/stackforge/designate.git
 #  set the $DESIGNATE_SRC variable below to match the root of the designate code repo
 
-export DESIGNATE_SRC="$HOME/designate/designate_src"
+export DESIGNATE_SRC="$HOME/designate/designate"
 echo "export DESIGNATE_SRC=$DESIGNATE_SRC" >> $HOME/.bashrc
+
+echo "install system dependencies"
+sudo apt-get -y update
+sudo apt-get -y install python-pip python-virtualenv rabbitmq-server git
 
 # This file executes each time a new vagrant machine is setup. Used to setup app python dependencies
 cd $DESIGNATE_SRC
 sudo apt-get build-dep -y python-lxml
 
-## Setup Virtualenv
+echo "Setup Virtualenv"
 virtualenv --no-site-packages .venv
 . .venv/bin/activate
 echo "source $DESIGNATE_SRC/.venv/bin/activate" >> $HOME/.bashrc
 
-## Setup environment requirements
+echo "Setup application requirements"
 pip install -r requirements.txt -r test-requirements.txt
 python setup.py develop
 mkdir -p $DESIGNATE_SRC/var/log/designate
 
-## Designate configuration
-cd etc/designate
-ls *.sample | while read f; do cp $f $(echo $f | sed "s/.sample$//g"); done
-
-## Setup PowerDNS
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y pdns-server pdns-backend-sqlite3
-sudo sed -i 's:gsqlite3-database=/var/lib/powerdns/pdns.sqlite3:gsqlite3-database=$DESIGNATE_SRC/powerdns.sqlite:g' /etc/powerdns/pdns.d/pdns.local.gsqlite3
-sudo service pdns restart
-
 ## Designate user
 sudo echo "designate ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/90-designate
 sudo chmod 0440 /etc/sudoers.d/90-designate
+
+## Designate configuration
+cd etc/designate
+ls *.sample | while read f; do cp $f $(echo $f | sed "s/.sample$//g"); done
 cat > designate.conf <<EOF
 [DEFAULT]
 ########################
@@ -168,8 +167,13 @@ max_retries = 10
 retry_interval = 10
 EOF
 
-cd ../..
+## Setup PowerDNS
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y pdns-server pdns-backend-sqlite3
+sudo sed -i 's:gsqlite3-database=/var/lib/powerdns/pdns.sqlite3:gsqlite3-database=$DESIGNATE_SRC/powerdns.sqlite:g' /etc/powerdns/pdns.d/pdns.local.gsqlite3
+sudo service pdns restart
+
 # Initialize and start Central, backend and storage and API
+cd ../..
 designate-manage database-init
 designate-manage database-sync
 designate-manage powerdns database-init
