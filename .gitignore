@@ -1,0 +1,8 @@
+*
+cookbooks/*
+!Vagrantfile
+!get_cookbooks.sh
+!bootstrap.sh
+!cookbooks
+!README.md
+!.gitignore
