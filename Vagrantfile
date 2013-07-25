@@ -57,7 +57,7 @@ Vagrant::Config.run do |config|
   end
 
 
-  #config.vm.provision :shell, :path => "bootstrap.sh"
+  config.vm.provision :shell, :path => "bootstrap.sh"
 
   # Enable provisioning with chef server, specifying the chef server URL,
   # and the path to the validation key (relative to this Vagrantfile).

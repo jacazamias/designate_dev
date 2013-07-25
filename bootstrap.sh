@@ -7,8 +7,8 @@
 #  git clone https://github.com/stackforge/designate.git
 #  set the $DESIGNATE_SRC variable below to match the root of the designate code repo
 
-export DESIGNATE_SRC="$HOME/designate/designate"
-echo "export DESIGNATE_SRC=$DESIGNATE_SRC" >> $HOME/.bashrc
+export DESIGNATE_SRC="/home/vagrant/designate/designate"
+echo "export DESIGNATE_SRC=$DESIGNATE_SRC" >> /home/vagrant/.bashrc
 
 echo "install system dependencies"
 sudo apt-get -y update
