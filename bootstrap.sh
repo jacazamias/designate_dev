@@ -18,19 +18,19 @@ sudo apt-get -y install python-pip python-virtualenv rabbitmq-server git
 cd $DESIGNATE_SRC
 sudo apt-get build-dep -y python-lxml
 
-echo "Setup Virtualenv"
-virtualenv --no-site-packages .venv
-. .venv/bin/activate
-echo "source $DESIGNATE_SRC/.venv/bin/activate" >> $HOME/.bashrc
+#echo "Setup Virtualenv"
+#virtualenv --no-site-packages .venv
+#. .venv/bin/activate
+#echo "source $DESIGNATE_SRC/.venv/bin/activate" >> $HOME/.bashrc
 
 echo "Setup application requirements"
-pip install -r requirements.txt -r test-requirements.txt
-python setup.py develop
+sudo pip install -r requirements.txt -r test-requirements.txt
+sudo python setup.py develop
 mkdir -p $DESIGNATE_SRC/var/log/designate
 
 ## Designate user
-sudo echo "designate ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/90-designate
-sudo chmod 0440 /etc/sudoers.d/90-designate
+#sudo echo "designate ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/90-designate
+#sudo chmod 0440 /etc/sudoers.d/90-designate
 
 ## Designate configuration
 cd etc/designate
