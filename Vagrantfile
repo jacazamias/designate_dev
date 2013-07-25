@@ -7,7 +7,7 @@ Vagrant::Config.run do |config|
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "precise64_squishy"
+  config.vm.box = "ubuntu12_puppet"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
@@ -44,6 +44,7 @@ Vagrant::Config.run do |config|
      chef.cookbooks_path = "cookbooks"
   #   chef.roles_path = "../my-recipes/roles"
   #   chef.data_bags_path = "../my-recipes/data_bags"
+     chef.add_recipe "yum"
      chef.add_recipe "apt"
      chef.add_recipe "build-essential"
      chef.add_recipe "vim"
