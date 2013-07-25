@@ -24,7 +24,7 @@ vagrant up
 ### What did that do?
 The above steps do the following:
 * Creates a VM
-* Creates `designate_dev` which contains `designate_src`, the designate code.  Point your IDE to this directory to make changes
+* Creates a directory called `designate_dev` which contains `designate_src`, the directory with the designate code.  Point your IDE to this directory to make changes
 * Installs designate dependencies into the VM and starts designate on http://192.168.33.8:9001/v1/
 
 NOTE: After executing vagrant up, it will take about 5 minutes to finish executing. You will know it is done when you see `INFO: PowerDNS database synchronized sucessfully` and the service is responding correctly on 9001. Hit CTRL-C a couple of times to quit the window and get your terminal environment back.
