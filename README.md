@@ -5,8 +5,7 @@ These scripts are used to setup a Rackspace designate environment.
 
 
 TODO:
-* Using vagrant local has issues with some error messages, fix
-* The config file should be updated so we are using SED to modify a sample config file instead of overwriting it.
+* The designate config file should be updated in bootstrap so we are using SED to modify a sample config file instead of overwriting it.
 * Need more chef goodness.
 
 ## Vagrant Install
