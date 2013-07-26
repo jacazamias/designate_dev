@@ -190,7 +190,7 @@ EOF
 
 echo "======================================================================================="
 echo "Setup PowerDNS..."
-sudo sed -i 's:gsqlite3-database=/var/lib/powerdns/pdns.sqlite3:gsqlite3-database=$DESIGNATE_SRC/pdns.sqlite:g' /etc/powerdns/pdns.d/pdns.local.gsqlite3
+sudo sed -i 's:gsqlite3-database=/var/lib/powerdns/pdns.sqlite3:gsqlite3-database="$DESIGNATE_SRC"/pdns.sqlite:g' /etc/powerdns/pdns.d/pdns.local.gsqlite3
 sudo service pdns restart
 cd ../..
 
