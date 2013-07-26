@@ -7,8 +7,27 @@
 #  git clone https://github.com/stackforge/designate.git
 #  set the $DESIGNATE_SRC variable below to match the root of the designate code repo
 
-export DESIGNATE_SRC="/home/vagrant/designate/designate"
+export DESIGNATE_SRC="/home/vagrant/designate/designate_src"
+
+
+echo "======================================================================================="
+echo " ____    ____  __ __      ___      ___  _____ ____   ____  ____    ____  ______    ___ "
+echo "|    \  /    ||  |  |    |   \    /  _]/ ___/|    | /    ||    \  /    ||      |  /  _]"
+echo "|  D  )|  o  ||  |  |    |    \  /  [_(   \_  |  | |   __||  _  ||  o  ||      | /  [_ "
+echo "|    / |     ||_   _|    |  D  ||    _]\__  | |  | |  |  ||  |  ||     ||_|  |_||    _]"
+echo "|    \ |  _  ||     |    |     ||   [_ /  \ | |  | |  |_ ||  |  ||  _  |  |  |  |   [_ "
+echo "|  .  \|  |  ||  |  |    |     ||     |\    | |  | |     ||  |  ||  |  |  |  |  |     |"
+echo "|__|\_||__|__||__|__|    |_____||_____| \___||____||___,_||__|__||__|__|  |__|  |_____|"
+echo "======================================================================================="
+echo "DESIGNATE_SRC = $DESIGNATE_SRC"
 echo "export DESIGNATE_SRC=$DESIGNATE_SRC" >> /home/vagrant/.bashrc
+
+echo "Test for a validate DESIGNATE_SRC:"
+if [ ! -f $DESIGNATE_SRC/.gitignore ]; then
+    echo "You may have an invalid DESIGNATE_SRC directory set.  Exiting script to save you time."
+	exit 0
+fi
+
 
 echo "install system dependencies"
 sudo apt-get -y update
