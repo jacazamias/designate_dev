@@ -205,6 +205,7 @@ designate-manage powerdns database-sync
 if $vagrant_install ; then
     user_params="-u vagrant "
 fi
+sudo service pdns restart
 sudo $user_params designate-central&
 sudo $user_params designate-api&
 
