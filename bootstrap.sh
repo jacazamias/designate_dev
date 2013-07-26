@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
 
-# This script requires the following:
-#  apt-get update
-#  apt-get install python-pip python-virtualenv rabbitmq-server git
-#  apt-get build-dep python-lxml
+#  For vagrant-less installs, run the following:
+#  export DESIGNATE_SRC="/Path/to/designate_src"
 #  git clone https://github.com/stackforge/designate.git
-#  set the $DESIGNATE_SRC variable below to match the root of the designate code repo
+#  ./bootstrap.sh
 
-export DESIGNATE_SRC="/home/vagrant/designate/designate_src"
+
+if env | grep -q ^DESIGNATE_SRC=
+then
+  vagrant_install=false
+  echo "Installing without Vagrant based configuration..."
+  echo "export DESIGNATE_SRC=$DESIGNATE_SRC" >> $HOME/.bashrc
+else
+  echo "Installing for Vagrant..."
+  vagrant_install=true
+  export DESIGNATE_SRC="/home/vagrant/designate/designate_src"
+  echo "export DESIGNATE_SRC=$DESIGNATE_SRC" >> /home/vagrant/.bashrc
+fi
 
 
 echo "======================================================================================="
@@ -20,7 +29,7 @@ echo "|  .  \|  |  ||  |  |    |     ||     |\    | |  | |     ||  |  ||  |  |  
 echo "|__|\_||__|__||__|__|    |_____||_____| \___||____||___,_||__|__||__|__|  |__|  |_____|"
 echo "======================================================================================="
 echo "DESIGNATE_SRC = $DESIGNATE_SRC"
-echo "export DESIGNATE_SRC=$DESIGNATE_SRC" >> /home/vagrant/.bashrc
+
 
 echo "Test for a validate DESIGNATE_SRC...."
 # This simple check looks for a '.gitignore', as any future designate changes are likely to persist the file.
@@ -73,10 +82,6 @@ notification_driver = designate.openstack.common.notifier.rabbit_notifier
 # Change to "sudo" to skip the filtering and just run the comand directly
 root_helper = sudo
 
-# There has to be a better way to set these defaults
-allowed_rpc_exception_modules = designate.exceptions, designate.openstack.common.exception
-default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keystone=INFO, eventlet.wsgi.server=WARN, stevedore=WARN, keystoneclient.middleware.auth_token=INFO
-
 ########################
 ## Service Configuration
 ########################
@@ -113,7 +118,7 @@ api_port = 9001
 auth_strategy = noauth
 
 # Enabled API Version 1 extensions
-enabled_extensions_v1 = diagnostics, sync, quotas, reports, sync
+enabled_extensions_v1 = diagnostics, quotas, reports, sync
 
 #-----------------------
 # Agent Service
@@ -185,7 +190,7 @@ EOF
 
 echo "======================================================================================="
 echo "Setup PowerDNS..."
-sudo sed -i 's:gsqlite3-database=/var/lib/powerdns/pdns.sqlite3:gsqlite3-database=$DESIGNATE_SRC/powerdns.sqlite:g' /etc/powerdns/pdns.d/pdns.local.gsqlite3
+sudo sed -i 's:gsqlite3-database=/var/lib/powerdns/pdns.sqlite3:gsqlite3-database=$DESIGNATE_SRC/pdns.sqlite:g' /etc/powerdns/pdns.d/pdns.local.gsqlite3
 sudo service pdns restart
 cd ../..
 
@@ -196,9 +201,17 @@ designate-manage database-init
 designate-manage database-sync
 designate-manage powerdns database-init
 designate-manage powerdns database-sync
-# Start designate as vagrant user:
-sudo -u vagrant designate-central&
-sudo -u vagrant designate-api&
-echo "Designate started on: "$IP_ADDRESS 
+# Start designate:
+if $vagrant_install ; then
+    user_params="-u vagrant "
+fi
+sudo $user_params designate-central&
+sudo $user_params designate-api&
 
+if $vagrant_install
+then
+	echo "Designate started on: "$IP_ADDRESS 
+else
+	echo "Designate started."
+fi
 

@@ -58,12 +58,9 @@ cd ../
 Before running the below commands, be sure to validate your `DESIGNATE_SRC` is pointing to the root of the designate directory.
 
 ``` bash
-apt-get update
-apt-get install python-pip python-virtualenv rabbitmq-server git
-apt-get build-dep python-lxml
 git clone https://github.com/stackforge/designate.git
 git clone https://github.com/joeracker/designate_dev.git
-cd designate
-sudo chmod +x ~/designate_dev/bootstrap.sh #Update permissions
-~/designate_dev/bootstrap.sh #Execute the script
+chmod +x ~/designate_dev/bootstrap.sh #Update permissions
+export DESIGNATE_SRC="$HOME/designate" # set your path appropriately
+~/designate_dev/bootstrap.sh # Execute the script
 ```
