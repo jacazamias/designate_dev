@@ -22,27 +22,24 @@ echo "==========================================================================
 echo "DESIGNATE_SRC = $DESIGNATE_SRC"
 echo "export DESIGNATE_SRC=$DESIGNATE_SRC" >> /home/vagrant/.bashrc
 
-echo "Test for a validate DESIGNATE_SRC:"
+echo "Test for a validate DESIGNATE_SRC...."
+# This simple check looks for a '.gitignore', as any future designate changes are likely to persist the file.
 if [ ! -f $DESIGNATE_SRC/.gitignore ]; then
     echo "You may have an invalid DESIGNATE_SRC directory set.  Exiting script to save you time."
 	exit 0
 fi
+echo "PASSED!"
+IP_ADDRESS=$(ifconfig eth1 | grep inet | grep -v inet6 | awk '{print $2}')
 
-
-echo "install system dependencies"
+echo "======================================================================================="
+echo "Install system dependencies..."
 sudo apt-get -y update
-sudo apt-get -y install python-pip python-virtualenv rabbitmq-server git
-
-# This file executes each time a new vagrant machine is setup. Used to setup app python dependencies
-cd $DESIGNATE_SRC
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y pdns-server pdns-backend-sqlite3 python-pip python-virtualenv rabbitmq-server git
 sudo apt-get build-dep -y python-lxml
 
-#echo "Setup Virtualenv"
-#virtualenv --no-site-packages .venv
-#. .venv/bin/activate
-#echo "source $DESIGNATE_SRC/.venv/bin/activate" >> $HOME/.bashrc
-
-echo "Setup application requirements"
+echo "======================================================================================="
+echo "Setup application requirements..."
+cd $DESIGNATE_SRC
 sudo pip install -r requirements.txt -r test-requirements.txt
 sudo python setup.py develop
 mkdir -p $DESIGNATE_SRC/var/log/designate
@@ -186,16 +183,21 @@ max_retries = 10
 retry_interval = 10
 EOF
 
-## Setup PowerDNS
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y pdns-server pdns-backend-sqlite3
+echo "======================================================================================="
+echo "Setup PowerDNS..."
 sudo sed -i 's:gsqlite3-database=/var/lib/powerdns/pdns.sqlite3:gsqlite3-database=$DESIGNATE_SRC/powerdns.sqlite:g' /etc/powerdns/pdns.d/pdns.local.gsqlite3
 sudo service pdns restart
-
-# Initialize and start Central, backend and storage and API
 cd ../..
+
+
+echo "======================================================================================="
+echo "Initialize/sync designate & powerdns DBs. Start Central and API..."
 designate-manage database-init
 designate-manage database-sync
 designate-manage powerdns database-init
 designate-manage powerdns database-sync
 designate-central&
 designate-api&
+echo "Designate started on: "$IP_ADDRESS 
+
+
