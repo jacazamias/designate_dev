@@ -28,10 +28,20 @@ The above steps do the following:
 
 NOTE: After executing vagrant up, it will take about 5 minutes to finish executing. You will know it is done when you see `INFO: PowerDNS database synchronized sucessfully` and the service is responding correctly on 9001. Hit CTRL-C a couple of times to quit the window and get your terminal environment back.
 
-#### Tips working with Vagrant
+#### Working with Vagrant
 * `vagrant up` starts a new VM
 * `vagrant reload` will apply any changes to the vagrant file
 * `vagrant destroy` will allow you to delete the VM and start over
+
+#### Working with your IDE/editor
+When making changes in your editor, designate-api and designate-central need to be restarted to see the changes. You can restart them by doing the following from the designate_dev directory:
+``` bash
+vagrant ssh
+killall designate-api
+killall designate-central
+designate-api&
+designate-central&
+```
 
 
 ### TODO
