@@ -196,8 +196,9 @@ designate-manage database-init
 designate-manage database-sync
 designate-manage powerdns database-init
 designate-manage powerdns database-sync
-designate-central&
-designate-api&
+# Start designate as vagrant user:
+sudo -u vagrant designate-central&
+sudo -u vagrant designate-api&
 echo "Designate started on: "$IP_ADDRESS 
 
 
