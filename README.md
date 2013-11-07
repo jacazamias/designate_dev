@@ -16,7 +16,6 @@ TODO:
 git clone https://github.com/rackerlabs/designate_dev.git
 cd designate_dev
 git clone https://github.com/stackforge/designate.git designate_src
-vagrant box add precise64_squishy https://s3-us-west-2.amazonaws.com/squishy.vagrant-boxes/precise64_squishy_2013-02-09.box
 vagrant up
 ```
 
