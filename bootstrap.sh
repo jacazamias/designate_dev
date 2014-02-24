@@ -68,7 +68,7 @@ cd $DESIGNATE_SRC
 sudo pip install -r requirements.txt -r test-requirements.txt
 pip install --upgrade PrettyTable
 sudo python setup.py develop
-mkdir -p /var/log/designate
+mkdir -p $DESIGNATE_SRC/var/log/designate
 
 ## Designate user
 #sudo echo "designate ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/90-designate
@@ -78,13 +78,6 @@ mkdir -p /var/log/designate
 cd etc/designate
 ls *.sample | while read f; do cp $f $(echo $f | sed "s/.sample$//g"); done
 
-
-echo "======================================================================================="
-echo "Setup Backend..."
-
-if $bind_install
-then
-echo "Setup bind9..."
 cat > designate.conf <<EOF
 [DEFAULT]
 ########################
@@ -97,10 +90,10 @@ verbose = True
 debug = False
 
 # Top-level directory for maintaining designate's state
-state_path = /home/vagrant/designate/designate_src
+state_path = $DESIGNATE_SRC
 
 # Log directory
-#logdir = /var/log/designate
+logdir = $DESIGNATE_SRC/var/log/designate
 
 # Driver used for issuing notifications
 #notification_driver = designate.openstack.common.notifier.rpc_notifier
@@ -121,20 +114,7 @@ root_helper = sudo
 #-----------------------
 [service:central]
 # Driver used for backend communication (e.g. fake, rpc, bind9, powerdns)
-backend_driver = bind9
-
-# List of blacklist domain name regexes
-#domain_name_blacklist = \.arpa\.$, \.novalocal\.$, \.localhost\.$, \.localdomain\.$, \.local\.$
-
-# Accepted TLDs
-# This is a local copy of the list at
-# http://data.iana.org/TLD/tlds-alpha-by-domain.txt
-#accepted_tlds_file = tlds-alpha-by-domain.txt
-
-# Effective TLDs
-# This is a local copy of the list at http://publicsuffix.org/list/
-# This contains domain names that effectively act like TLDs e.g. co.uk or tx.us
-#effective_tlds_file = effective_tld_names.dat
+#backend_driver = fake
 
 # Maximum domain name length
 #max_domain_name_len = 255
@@ -146,35 +126,83 @@ backend_driver = bind9
 ## Managed resources settings
 
 # Email to use for managed resources like domains created by the FloatingIP API
-# managed_resource_email = root@example.io.
+#managed_resource_email = root@example.io.
 
 # Tenant ID to own all managed resources - like auto-created records etc.
-# managed_resource_tenant_id = 123456
+#managed_resource_tenant_id = 123456
 
 #-----------------------
 # API Service
 #-----------------------
 [service:api]
 # Address to bind the API server
-#api_host = 0.0.0.0
+api_host = 0.0.0.0
 
 # Port the bind the API server to
-#api_port = 9001
+api_port = 9001
 
 # Authentication strategy to use - can be either "noauth" or "keystone"
-#auth_strategy = noauth
+auth_strategy = noauth
 
 # Enable Version 1 API
-#enable_api_v1 = True
+enable_api_v1 = True
 
 # Enable Version 2 API (experimental)
-#enable_api_v2 = True
+enable_api_v2 = True
+
+# Local base url
+api_base_uri = http://192.168.33.8:9001/
 
 # Show the pecan HTML based debug interface (v2 only)
 #pecan_debug = False
 
 # Enabled API Version 1 extensions
-#enabled_extensions_v1 = diagnostics, quotas, reports, sync, touch
+enabled_extensions_v1 = diagnostics, quotas, reports, sync, touch
+
+#-----------------------
+# Keystone Middleware
+#-----------------------
+#[keystone_authtoken]
+#auth_host = 127.0.0.1
+#auth_port = 35357
+#auth_protocol = http
+#admin_tenant_name = service
+#admin_user = designate
+#admin_password = designate
+
+#-----------------------
+# Agent Service
+#-----------------------
+[service:agent]
+# Driver used for backend communication (e.g. bind9, powerdns)
+#backend_driver = bind9
+
+#-----------------------
+# Sink Service
+#-----------------------
+[service:sink]
+# List of notification handlers to enable, configuration of these needs to
+# correspond to a [handler:my_driver] section below or else in the config
+#enabled_notification_handlers = nova_fixed
+
+##############
+## Network API
+##############
+[network_api:neutron]
+#endpoints = RegionOne|http://localhost:9696
+#endpoint_type = publicURL
+#timeout = 30
+#admin_username = designate
+#admin_password = designate
+#admin_tenant_name = designate
+#auth_url = http://localhost:35357/v2.0
+#insecure = False
+#auth_strategy = keystone
+#ca_certificates_file = /etc/path/to/ca.pem
+
+########################
+## Storage Configuration
+########################
 #-----------------------
 # SQLAlchemy Storage
 #-----------------------
@@ -182,12 +210,34 @@ backend_driver = bind9
 # Database connection string - to configure options for a given implementation
 # like sqlalchemy or other see below
 database_connection = mysql://root:password@127.0.0.1/designate
-#connection_debug = 100
-#connection_trace = False
-#sqlite_synchronous = True
-#idle_timeout = 3600
-#max_retries = 10
-#retry_interval = 10
+connection_debug = 100
+connection_trace = True
+sqlite_synchronous = True
+idle_timeout = 3600
+max_retries = 10
+retry_interval = 10
+
+########################
+## Handler Configuration
+########################
+#-----------------------
+# Nova Fixed Handler
+#-----------------------
+[handler:nova_fixed]
+#domain_id = <random uuid>
+#notification_topics = monitor
+#control_exchange = 'nova'
+#format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
+
+#------------------------
+# Neutron Floating Handler
+#------------------------
+[handler:neutron_floatingip]
+#domain_id = <random uuid>
+#notification_topics = monitor
+#control_exchange = 'neutron'
+#format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
+
 
 ########################
 ## Backend Configuration
@@ -197,10 +247,50 @@ database_connection = mysql://root:password@127.0.0.1/designate
 #-----------------------
 [backend:bind9]
 rndc_host = 127.0.0.1
-#rndc_host = 0.0.0.0
 rndc_port = 953
 rndc_config_file = /etc/bind/rndc.conf
 rndc_key_file = /etc/bind/rndc.key
+
+#-----------------------
+# Bind9+MySQL Backend
+#-----------------------
+[backend:mysqlbind9]
+#database_connection = mysql://user:password@host/schema
+#rndc_host = 127.0.0.1
+#rndc_port = 953
+#rndc_config_file = /etc/rndc.conf
+#rndc_key_file = /etc/rndc.key
+#write_database = True
+#dns_server_type = master
+
+#-----------------------
+# PowerDNS Backend
+#-----------------------
+[backend:powerdns]
+database_connection = sqlite:///$DESIGNATE_SRC/pdns.sqlite
+connection_debug = 100
+connection_trace = True
+sqlite_synchronous = True
+idle_timeout = 3600
+max_retries = 10
+retry_interval = 10
+
+#-----------------------
+# NSD4Slave Backend
+#-----------------------
+[backend:nsd4slave]
+#keyfile =/etc/nsd/nsd_control.key
+#certfile = /etc/nsd/nsd_control.pem
+#servers = 127.0.0.1,127.0.1.1:4242
+#pattern = slave
+
+#-----------------------
+# Multi Backend
+#-----------------------
+[backend:multi]
+#master = fake
+#slave = fake
+
 EOF
 
 cat > /etc/bind/named.conf.options <<EOF
@@ -244,144 +334,31 @@ options {
 
 # End of rndc.conf
 EOF
-service bind9 restart
+
+echo "======================================================================================="
+echo "Setup Backend..."
+
+if $bind_install
+then
+    echo "Setup bind9..."
+
+cat >> designate.conf <<EOF
+[service:central]
+# Driver used for backend communication (e.g. fake, rpc, bind9, powerdns)
+backend_driver = bind9
+EOF
+
+    service bind9 restart
 else
     echo "Setup PowerDNS..."
-cat > designate.conf <<EOF
-[DEFAULT]
-########################
-## General Configuration
-########################
-# Show more verbose log output (sets INFO log level output)
-verbose = True
 
-# Show debugging output in logs (sets DEBUG log level output)
-debug = True
-
-# Log directory #Make sure and create this directory, or set it to some other directory that exists
-logdir = /home/vagrant/designate/designate_src
-
-# Driver used for issuing notifications
-notification_driver = designate.openstack.common.notifier.rabbit_notifier
-
-# Use "sudo designate-rootwrap /etc/designate/rootwrap.conf" to use the real
-# root filter facility.
-# Change to "sudo" to skip the filtering and just run the comand directly
-root_helper = sudo
-
-########################
-## Service Configuration
-########################
-#-----------------------
-# Central Service
-#-----------------------
+cat >> designate.conf <<EOF
 [service:central]
 # Driver used for backend communication (e.g. fake, rpc, bind9, powerdns)
 backend_driver = powerdns
-
-# List of blacklist domain name regexes
-#domain_name_blacklist = \.arpa\.$, \.novalocal\.$, \.localhost\.$, \.localdomain\.$, \.local\.$
-
-# Accepted TLDs
-# This is a local copy of the list at
-# http://data.iana.org/TLD/tlds-alpha-by-domain.txt
-accepted_tlds_file = tlds-alpha-by-domain.txt
-
-# Effective TLDs
-# This is a local copy of the list at http://publicsuffix.org/list/
-# This contains domain names that effectively act like TLDs e.g. co.uk or tx.us
-effective_tlds_file = effective_tld_names.dat
-
-# Maximum domain name length
-max_domain_name_len = 255
-
-# Maximum record name length
-max_record_name_len = 255
-
-#-----------------------
-# API Service
-#-----------------------
-[service:api]
-# Address to bind the API server
-api_host = 0.0.0.0
-
-# Port the bind the API server to
-api_port = 9001
-
-# Authentication strategy to use - can be either "noauth" or "keystone"
-auth_strategy = noauth
-
-# Enabled API Version 1 extensions
-enabled_extensions_v1 = diagnostics, quotas, reports, sync
-
-#-----------------------
-# Agent Service
-#-----------------------
-[service:agent]
-# Driver used for backend communication (e.g. bind9, powerdns)
-
-#-----------------------
-# Sink Service
-#-----------------------
-[service:sink]
-
-########################
-## Storage Configuration
-########################
-#-----------------------
-# SQLAlchemy Storage
-#-----------------------
-[storage:sqlalchemy]
-# Database connection string - to configure options for a given implementation
-# like sqlalchemy or other see below
-database_connection = mysql://root:password@127.0.0.1/designate
-connection_debug = 100
-connection_trace = True
-sqlite_synchronous = True
-idle_timeout = 3600
-max_retries = 10
-retry_interval = 10
-
-########################
-## Handler Configuration
-########################
-#-----------------------
-# Nova Fixed Handler
-#-----------------------
-[handler:nova_fixed]
-
-#------------------------
-# Quantum Floating Handler
-#------------------------
-[handler:quantum_floating]
-
-########################
-## Backend Configuration
-########################
-#-----------------------
-# Bind9 Backend
-#-----------------------
-[backend:bind9]
-
-#-----------------------
-# Bind9+MySQL Backend
-#-----------------------
-[backend:mysqlbind9]
-
-
-#-----------------------
-# PowerDNS Backend
-#-----------------------
-[backend:powerdns]
-database_connection = mysql://root:password@127.0.0.1/powerdns
-connection_debug = 100
-connection_trace = True
-sqlite_synchronous = True
-idle_timeout = 3600
-max_retries = 10
-retry_interval = 10
 EOF
-sudo service pdns restart
+
+    sudo service pdns restart
 fi
 
 cd ../..
